@@ -37,6 +37,8 @@ func TestSlugMake(t *testing.T) {
 		{"2000–2013", "2000-2013"},
 		{"style—not", "style-not"},
 		{"test_slug", "test_slug"},
+		{"_test_slug_", "test_slug"},
+		{"-test-slug-", "test-slug"},
 		{"Æ", "ae"},
 		{"Ich heiße", "ich-heisse"},
 
@@ -65,17 +67,30 @@ func TestSlugMakeLang(t *testing.T) {
 		in   string
 		want string
 	}{
-		{"en", "This & that", "this-and-that"},
-		{"en", "äÄäöÖöüÜü", "aaaooouuu"},
-		{"de", "This & that", "this-und-that"},
 		{"de", "Wir mögen Bücher & Käse", "wir-moegen-buecher-und-kaese"},
 		{"de", "Äpfel Über Österreich", "aepfel-ueber-oesterreich"},
-		{"pl", "This & that", "this-i-that"},
+		{"en", "äÄäöÖöüÜü", "aaaooouuu"},
+		{"gr", "ϊχώΩϋ", "ixwwu"},
+		{"tr", "şüöğıçŞÜÖİĞÇ", "suogicsuoigc"},
+		// & fun.
+		{"de", "This & that", "this-und-that"},
+		{"en", "This & that", "this-and-that"},
 		{"es", "This & that", "this-y-that"},
+		{"fi", "This & that", "this-ja-that"},
 		{"gr", "This & that", "this-kai-that"},
 		{"nl", "This & that", "this-en-that"},
-		{"fi", "This & that", "this-ja-that"},
+		{"pl", "This & that", "this-i-that"},
+		{"tr", "This & that", "this-ve-that"},
 		{"test", "This & that", "this-and-that"}, // unknown lang, fallback to "en"
+		// Test defaultSub, when adding new lang copy/paste this line,
+		// it contain special characters.
+		{"de", "1\"2'3’4‒5–6—7―8", "1234-5-6-7-8"},
+		{"en", "1\"2'3’4‒5–6—7―8", "1234-5-6-7-8"},
+		{"es", "1\"2'3’4‒5–6—7―8", "1234-5-6-7-8"},
+		{"fi", "1\"2'3’4‒5–6—7―8", "1234-5-6-7-8"},
+		{"gr", "1\"2'3’4‒5–6—7―8", "1234-5-6-7-8"},
+		{"nl", "1\"2'3’4‒5–6—7―8", "1234-5-6-7-8"},
+		{"pl", "1\"2'3’4‒5–6—7―8", "1234-5-6-7-8"},
 	}
 
 	for index, smlt := range testCases {
@@ -246,7 +261,7 @@ func TestIsSlug(t *testing.T) {
 
 	t.Run("MaxLength", func(t *testing.T) {
 		MaxLength = 4
-		if got := IsSlug("012345"); got != false {
+		if got := IsSlug("012345"); got {
 			t.Errorf("IsSlug() = %v, want %v", got, false)
 		}
 		MaxLength = 0
